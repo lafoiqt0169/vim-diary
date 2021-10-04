@@ -1,0 +1,220 @@
+*diary.txt* Diary utility for vim
+
+Author:  Yasuhiro Matsumoto <mattn.jp@gmail.com>
+
+INTRODUCTION                                    *diary*
+
+This script creates a diary window in vim.  It does not rely on any
+external program, such as cal, etc.
+
+COMMANDS                                        *diary-commands*
+
+diary.vim makes the following commands available:
+
+                                                *diary-:Diary*
+:Diary [[year] month]  Show diary at this year and this month in a
+                          vertical split.  When [year] is omitted, the
+                          diary will show the given month in the current
+                          year.  When both [year] and [month] are omitted, the
+                          diary will show the current month.
+
+                                                *diary-:DiaryH*
+:DiaryH [[year] month] Show diary at this year and this month in a
+                          horizontal split.  When [year] is omitted, the
+                          diary will show the given month in the current
+                          year.  When both [year] and [month] are omitted, the
+                          diary will show the current month.
+
+                                                *diary-:DiaryT*
+:DiaryT [[year] month] Show diary at this year and this month in a
+                          full-screen window.  When [year] is omitted, the
+                          diary will show the given month in the current
+                          year.  When both [year] and [month] are omitted, the
+                          diary will show the current month.
+
+                                                *diary-:DiaryVR* 
+:DiaryVR [[year] month]  Show diary at this year and this month in a
+                          vertical split at the right site.  When [year] is
+                          omitted, the diary will show the given month in
+                          the current year.  When both [year] and [month] are
+                          omitted, the diary will show the current month.
+
+MAPPINGS                                        *diary-mappings*
+
+diary.vim makes the following normal mode mappings available:
+
+                                                *diary-cal*
+<LocalLeader>jz           Brings up the diary in a vertical split.
+                          Equivalent to calling |:Diary|.
+
+                                                *diary-caL*
+<LocalLeader>jzl          Brings up the diary in a horizontal split.
+                          Equivalent to calling |:DiaryH|.
+
+SETTINGS                                        *diary-settings*
+
+diary.vim can be configured using the following settings:
+
+                                                *g:diary_focus_today*
+Keeps focus when moving to next or previous diary: >
+  let g:diary_focus_today = 1
+<
+
+                                                *g:diary_keys*
+To change the key bindings in the diary window, add entries to this
+dictionary.   Possible keys, the action bound to the keycode given in the
+respective value for this key and the default binding are listed below.
+'close'                     Closes diary window.             'q'
+'do_action'                 Executes |diary_action|.           '<CR>'
+'goto_today'                Executes |diary_today|.            't'
+'show_help'                 Displays a short help message.      '?'
+'redisplay'                 Redraws diary window.            'r'
+'goto_next_month'           Jumps to the next month.            '<Right>'
+'goto_prev_month'           Jumps to the previous month.        '<Left>'
+'goto_next_year'            Jumps to the next year.             '<Up>'
+'goto_prev_year'            Jumps to the previous year.         '<Down>'
+An example in your .vimrc might look like this: >
+  let g:diary_keys = { 'goto_next_month': '<C-Right>', 'goto_prev_month': '<C-Left>'}
+<
+
+                                                *g:diary_mark*
+Place a '*' or '+' mark after the day.  Acceptable values are 'left',
+'left-fit', and 'right': >
+  let g:diary_mark = 'right'
+<
+
+                                                *g:diary_dir*
+Specify the directory for the diary files.  The default value is $HOME/diary.
+  let g:diary_dir=$HOME.'/.vim/diary'
+
+
+                                                *g:diary_navi*
+To control the diary navigator, set this variable.  Acceptable values are
+'top', 'bottom', or 'both'. >
+  let g:diary_navi = ''
+<
+
+                                                *g:diary_navi_label*
+To set the labels for the diary navigator, for example to change the
+language, use this variable.  Entries should be comma separated. >
+  let g:diary_navi_label = 'Prev,Today,Next'
+<
+
+                                                *g:diary_erafmt*
+To change the dating system, set the following variable.  Include the name of
+the dating system and its offset from the Georgian diary (A.D.).  For
+example, to use the current Japanese era (Heisei), you would set: >
+  let g:diary_erafmt = 'Heisei,-1988'
+<
+
+                                                *g:diary_mruler*
+To change the month names for the diary headings, set this variable.  The
+value is expected to be a comma-separated list of twelve values, starting with
+January: >
+  let g:diary_mruler = 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'
+<
+
+                                                *g:diary_wruler*
+To change the week names for the diary headings, set this variable.  The
+value is expected to be a space-separated list of seven values, starting with
+Sunday: >
+  let g:diary_wruler = 'Su Mo Tu We Th Fr Sa'
+<
+
+                                                *g:diary_monday*
+To make the week start on Monday rather than Sunday, set this variable.  Note
+that the value of |g:diary_wruler| is not affected by this; it should
+always begin with Sunday: >
+  let g:diary_monday = 1
+<
+
+                                                *g:diary_weeknm*
+To show the week number, set this variable.  There are four valid settings: >
+  let g:diary_weeknm = 1 " WK01
+  let g:diary_weeknm = 2 " WK 1
+  let g:diary_weeknm = 3 " KW01
+  let g:diary_weeknm = 4 " KW 1
+  let g:diary_weeknm = 5 " 1
+<
+
+                                                *g:diary_datetime*
+To control display of the current date and time, set this variable.
+Acceptable values are 'title', 'statusline', and '': >
+  let g:diary_datetime = 'title'
+<
+                                                *g:diary_filetype*
+To control the filetype of diary entries, set this variable. It defaults to
+'markdown'. Acceptable values are values that are acceptable for |filetype|
+like e.g. 'markdown' or 'pandoc':
+  let g:diary_filetype = 'pandoc'
+
+
+HOOKS                                           *diary-hooks*
+
+diary.vim provides a number of hooks which allow you to run custom code on
+certain events.  These are documented below.
+
+                                                *diary_action*
+The function declared in the diary_action variable is run when the user
+presses enter on a date.  Implement and set your function as follows: >
+  function MyCalAction(day,month,year,week,dir)
+    " day   : day you actioned
+    " month : month you actioned
+    " year  : year you actioned
+    " week  : day of week (Mo=1 ... Su=7)
+    " dir   : direction of diary
+  endfunction
+  let diary_action = 'MyCalAction'
+<
+
+                                                *diary_begin*
+The function declared in the diary_begin variable is run just before the
+diary is displayed.  Implement and set your function as follows: >
+  function MyCalActionBegin()
+  endfunction
+  let diary_begin = 'MyCalActionBegin'
+<
+
+                                                *diary_end*
+The function declared in the diary_end variable is run just after the
+diary is displayed.  Implement and set your function as follows: >
+  function MyCalActionEnd()
+  endfunction
+  let diary_end = 'MyCalActionEnd'
+<
+
+                                                *diary_sign*
+The function declared in the diary_sign variable can be used to set a mark
+next to certain dates.  Implement and set your function as follows: >
+  function MyCalSign(day,month,year)
+    " day   : day you actioned
+    " month : month you actioned
+    " year  : year you actioned
+    if a:day == 1 && a:month == 1
+      return 1 " happy new year
+    else
+      return 0 " or not
+    endif
+  endfunction
+  let diary_sign = 'MyCalSign'
+<
+
+                                                *diary_today*
+The function declared in the diary_today variable is run when the user
+presses 'today'.  Implement and set your function as follows: >
+  function MyCalToday()
+  endfunction
+  let diary_today = 'MyCalToday'
+<
+
+ABOUT                                           *diary-about*
+
+diary.vim is available on GitHub:
+
+  http://github.com/mattn/diary.vim
+
+and also on VimScripts:
+
+  http://www.vim.org/scripts/script.php?script_id=52
+
+vim:tw=78:et:ft=help:norl:
